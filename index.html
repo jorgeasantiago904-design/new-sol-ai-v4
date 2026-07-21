@@ -361,20 +361,20 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
         </button>
       </div>
-      <div class="disclaimer">Sol AI can make mistakes. Check important info.</div>
+      <div class="disclaimer">Sol AI</div>
     </div>
   </div>
 
   <script>
     const API_KEY = "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";
     const MODEL_NAME = "groq/compound";
-    const AVATAR_URL = "https://s3-new.macosicons.com/macosicons/parse/Google_Ai_Studio_3aUC9UTjam_lowResPng-c6d3bfde33.png";
+    const AVATAR_URL = "https://s3-new.macosicons.com/macosicons/parse/Framer_R5FZfDYRGt_lowResPng-28137a54b1.png";
 
     // Rate Limiting Rules
     const LIMITS = {
-      RPM: 300,        // Requests Per Minute
-      RPD: 250000,     // Requests Per Day
-      TPM: 70000,      // Tokens Per Minute
+      RPM: 30,        // Requests Per Minute
+      RPD: 25000,     // Requests Per Day
+      TPM: 7000,      // Tokens Per Minute
       TPD: Infinity    // Unlimited
     };
 
@@ -450,10 +450,10 @@
         .reduce((sum, log) => sum + log.count, 0);
 
       if (requestsLastMinute >= LIMITS.RPM) {
-        return { allowed: false, reason: "RPM limit reached (300 req/min). Please wait a moment." };
+        return { allowed: false, reason: "RPM limit reached (30 req/min). Please wait a moment." };
       }
       if (requestsLastDay >= LIMITS.RPD) {
-        return { allowed: false, reason: "Daily request limit reached (250,000 req/day)." };
+        return { allowed: false, reason: "Daily request limit reached (25,000 req/day)." };
       }
       if (tokensLastMinute + estimatedNewTokens > LIMITS.TPM) {
         return { allowed: false, reason: "TPM limit reached (70,000 tokens/min). Please wait a minute." };
