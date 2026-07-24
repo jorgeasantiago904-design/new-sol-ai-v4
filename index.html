@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sol AI Interface</title>
+  <title>chatgpt AI Interface</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     * {
@@ -183,7 +183,7 @@
       border-radius: 50%;
     }
 
-    /* Formatting & Organized Text Styling */
+    /* Formatting & Text Styling */
     .text-body {
       flex: 1;
       word-break: break-word;
@@ -198,7 +198,6 @@
       margin-bottom: 0;
     }
 
-    /* Blue Clickable Links */
     .text-body a {
       color: #58a6ff;
       text-decoration: underline;
@@ -209,7 +208,6 @@
       text-decoration: none;
     }
 
-    /* Bullet Points & Lists */
     .text-body ul, .text-body ol {
       margin-left: 20px;
       margin-bottom: 12px;
@@ -219,7 +217,6 @@
       margin-bottom: 4px;
     }
 
-    /* Code Blocks */
     .text-body code {
       background-color: #2d2d2d;
       padding: 2px 6px;
@@ -242,14 +239,12 @@
       padding: 0;
     }
 
-    /* Headings */
     .text-body h1, .text-body h2, .text-body h3, .text-body h4 {
       margin-top: 16px;
       margin-bottom: 8px;
       color: #ffffff;
     }
 
-    /* Tables */
     .text-body table {
       border-collapse: collapse;
       margin-bottom: 12px;
@@ -366,31 +361,23 @@
   </div>
 
   <script>
-    const API_KEY = "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";
-    const MODEL_NAME = "groq/compound";
+    const API_KEY = "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"; 
+    const MODEL_NAME = "llama-3.3-70b-versatile";
     const AVATAR_URL = "https://img.icons8.com/?size=100&id=u9JE2GppVZoD&format=png&color=FFFFFF";
 
-    // Rate Limiting Rules
     const LIMITS = {
-      RPM: 300,        // Requests Per Minute
-      RPD: 250000,     // Requests Per Day
-      TPM: 70000,      // Tokens Per Minute
-      TPD: Infinity    // Unlimited
+      RPM: 300,
+      RPD: 250000,
+      TPM: 70000,
+      TPD: Infinity
     };
 
     let chats = [];
     let activeChatId = null;
-
-    let rateTracker = {
-      requests: [],
-      tokenLogs: []
-    };
+    let rateTracker = { requests: [], tokenLogs: [] };
 
     if (typeof marked !== 'undefined') {
-      marked.use({
-        gfm: true,
-        breaks: true
-      });
+      marked.use({ gfm: true, breaks: true });
     }
 
     window.onload = () => {
@@ -399,12 +386,16 @@
       const storedTracker = localStorage.getItem("rate_tracker");
 
       if (storedTracker) {
-        rateTracker = JSON.parse(storedTracker);
+        try { rateTracker = JSON.parse(storedTracker); } catch (e) {}
       }
 
       if (storedChats) {
-        chats = JSON.parse(storedChats);
-        activeChatId = storedActiveId || (chats[0] ? chats[0].id : null);
+        try {
+          chats = JSON.parse(storedChats);
+          activeChatId = storedActiveId || (chats[0] ? chats[0].id : null);
+        } catch (e) {
+          chats = [];
+        }
       }
 
       if (!chats.length || !activeChatId) {
@@ -487,7 +478,7 @@
       const newChat = {
         id: newId,
         title: "New Chat",
-        messages: [{ role: "system", content: "You are chatgpt AI, a helpful assistant." }]
+        messages: [{ role: "system", content: "You are ChatGPT, a large language model trained by OpenAI. Your primary goal is to be helpful, harmless, and honest. You do not have feelings, personal opinions, or consciousness. If asked about your identity, always state that you are an AI created by OpenAI.Neutral and Objective: Maintain a polite, professional, and unbiased tone. Avoid expressing personal beliefs, political opinions, or emotional states.Clear and Concise: Deliver information in a straightforward manner. Do not be overly chatty unless the user's prompt requires a conversational or creative tone.Structured Formatting: Use Markdown formatting (such as bullet points, bold text, and headers) to make complex information easy to read and digest.Accuracy: Prioritize factual accuracy. If you do not know the answer to a question or if the information is beyond your training data, clearly state that you do not know rather than guessing or hallucinating information. Safety: You must politely decline any requests that promote violence, illegal acts, self-harm, hate speech, or sexually explicit content.Task Adherence: Follow the user's instructions carefully. If a user asks for code, provide well-commented and functional code. If they ask for creative writing, match the requested genre and style." }]
       };
       chats.unshift(newChat);
       activeChatId = newId;
@@ -554,7 +545,7 @@
       const userAndAssistantMessages = activeChat.messages.filter(m => m.role !== "system");
 
       if (userAndAssistantMessages.length === 0) {
-        appendMessageUI("Hello! I am chatgpt AI. How can I help you today?", "bot");
+        appendMessageUI("Hello! I am chatgpt AI. How can I help you today?", "assistant");
         return;
       }
 
@@ -565,8 +556,12 @@
 
     function formatMessageContent(rawText) {
       if (typeof marked !== 'undefined') {
-        let parsedHtml = marked.parse(rawText);
-        return parsedHtml.replace(/<a href="/g, '<a target="_blank" rel="noopener noreferrer" href="');
+        try {
+          let parsedHtml = marked.parse(rawText);
+          return parsedHtml.replace(/<a href="/g, '<a target="_blank" rel="noopener noreferrer" href="');
+        } catch (e) {
+          return rawText;
+        }
       }
       return rawText;
     }
@@ -612,35 +607,23 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${API_KEY}`,
-            "Groq-Model-Version": "latest"
+            "Authorization": `Bearer ${API_KEY}`
           },
           body: JSON.stringify({
             model: MODEL_NAME,
             messages: activeChat.messages,
             temperature: 0.6,
-            max_completion_tokens: 8192,
-            top_p: 1,
-            stream: true,
-            compound_custom: {
-              tools: {
-                enabled_tools: [
-                  "web_search",
-                  "code_interpreter",
-                  "visit_website"
-                ]
-              }
-            }
+            max_tokens: 4096,
+            stream: true
           })
         });
 
         if (!response.ok) {
-          const errData = await response.json();
+          const errData = await response.json().catch(() => ({}));
           botTextElement.innerText = "Error: " + (errData.error?.message || "Failed to fetch response.");
           return;
         }
 
-        // Streaming Response Handler
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
         let fullReply = "";
@@ -648,23 +631,36 @@
 
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          
+          if (value) {
+            buffer += decoder.decode(value, { stream: !done });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
 
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop(); // Keep incomplete line in buffer
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (trimmed.startsWith("data: ") && trimmed !== "data: [DONE]") {
+                try {
+                  const parsed = JSON.parse(trimmed.slice(6));
+                  const content = parsed.choices[0]?.delta?.content || "";
+                  fullReply += content;
+                  botTextElement.innerHTML = formatMessageContent(fullReply);
+                  document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;
+                } catch (e) {}
+              }
+            }
+          }
 
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (trimmed.startsWith("data: ") && trimmed !== "data: [DONE]") {
+          if (done) {
+            if (buffer.trim().startsWith("data: ") && buffer.trim() !== "data: [DONE]") {
               try {
-                const parsed = JSON.parse(trimmed.slice(6));
+                const parsed = JSON.parse(buffer.trim().slice(6));
                 const content = parsed.choices[0]?.delta?.content || "";
                 fullReply += content;
                 botTextElement.innerHTML = formatMessageContent(fullReply);
-                document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;
               } catch (e) {}
             }
+            break;
           }
         }
 
@@ -699,7 +695,7 @@
       } else {
         const img = document.createElement("img");
         img.src = AVATAR_URL;
-        img.alt = "Sol AI Avatar";
+        img.alt = "chatgpt AI Avatar";
         avatar.appendChild(img);
       }
 
@@ -740,6 +736,5 @@
       }
     }
   </script>
-
 </body>
 </html>
