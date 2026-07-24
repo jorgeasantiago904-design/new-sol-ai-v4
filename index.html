@@ -613,11 +613,20 @@
             model: MODEL_NAME,
             messages: activeChat.messages,
             temperature: 0.6,
-            max_tokens: 4096,
-            stream: true
+            max_completion_tokens: 8192,
+            top_p: 1,
+            stream: true,
+            compound_custom: {
+              tools: {
+                enabled_tools: [
+                  "web_search",
+                  "code_interpreter",
+                  "visit_website"
+                ]
+              }
+            }
           })
         });
-
         if (!response.ok) {
           const errData = await response.json().catch(() => ({}));
           botTextElement.innerText = "Error: " + (errData.error?.message || "Failed to fetch response.");
